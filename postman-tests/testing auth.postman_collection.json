@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "10372b4f-6b40-453d-9f5e-573bee2e0967",
+		"_postman_id": "63b6c7cd-d938-456d-b18b-0c530eef5c38",
 		"name": "testing auth",
 		"description": "simple tests for QA purpose",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
@@ -12,7 +12,6 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "75eb3c47-5d89-47f9-aac7-e378f995e28d",
 						"exec": [
 							"pm.test(\"response is unauthorized\", function () {",
 							"    pm.response.to.have.status(404);",
@@ -21,8 +20,6 @@
 							"pm.test(\"response message is `user not found`\", function () {",
 							"    pm.expect(pm.response.text()).to.include(\"user not found\");",
 							"});",
-							"",
-							"",
 							""
 						],
 						"type": "text/javascript"
@@ -30,7 +27,7 @@
 				}
 			],
 			"request": {
-				"method": "POST",
+				"method": "GET",
 				"header": [],
 				"url": {
 					"raw": "{{url}}/login",
@@ -50,7 +47,6 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "0c882741-e615-45b5-85d8-dd92be5a6aa5",
 						"exec": [
 							"pm.test(\"response is unauthorized\", function () {",
 							"    pm.response.to.have.status(404);",
@@ -83,65 +79,11 @@
 			"response": []
 		},
 		{
-			"name": "login wrong credentials",
-			"event": [
-				{
-					"listen": "test",
-					"script": {
-						"id": "e5f397fe-6193-45d5-82f1-ae1cf30691dc",
-						"exec": [
-							"pm.test(\"response is unauthorized\", function () {",
-							"    pm.response.to.have.status(404);",
-							"});",
-							"",
-							"pm.test(\"response message is `user not found`\", function () {",
-							"    pm.expect(pm.response.text()).to.include(\"user not found\");",
-							"});",
-							"",
-							""
-						],
-						"type": "text/javascript"
-					}
-				}
-			],
-			"request": {
-				"method": "POST",
-				"header": [
-					{
-						"key": "Content-Type",
-						"name": "Content-Type",
-						"value": "application/json",
-						"type": "text"
-					}
-				],
-				"body": {
-					"mode": "raw",
-					"raw": "{\n\t\"username\": \"testUser\",\n\t\"password\": \"1234\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
-				"url": {
-					"raw": "{{url}}/login",
-					"host": [
-						"{{url}}"
-					],
-					"path": [
-						"login"
-					]
-				}
-			},
-			"response": []
-		},
-		{
 			"name": "login apropriate credentials",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "ec6bdccb-54c6-4120-b492-d6ccfc0a0193",
 						"exec": [
 							"pm.test(\"response is ok\", function () {",
 							"    pm.response.to.have.status(200);",
@@ -191,18 +133,99 @@
 			"response": []
 		},
 		{
-			"name": "log in and access to secure data",
+			"name": "login wrong credentials",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
-						"id": "4d90369c-9399-4a3f-a3ef-46fad88087a5",
+						"exec": [
+							"pm.test(\"response is unauthorized\", function () {",
+							"    pm.response.to.have.status(404);",
+							"});",
+							"",
+							"pm.test(\"response message is `user not found`\", function () {",
+							"    pm.expect(pm.response.text()).to.include(\"user not found\");",
+							"});",
+							"",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/json",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "raw",
+					"raw": "{\n\t\"username\": \"testUser\",\n\t\"password\": \"1234\"\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{url}}/login",
+					"host": [
+						"{{url}}"
+					],
+					"path": [
+						"login"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "log in and access to secure data - pre request script",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
 						"exec": [
 							"  pm.test(\"response should be 200 and have JSON body\", function () {",
 							"      pm.response.to.be.ok;",
 							"      pm.response.to.have.jsonBody();",
 							"      ",
 							"  });"
+						],
+						"type": "text/javascript"
+					}
+				},
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							"const properUserData = {",
+							"\t\"username\": \"user123\",",
+							"\t\"password\": \"1234\"",
+							"}",
+							"",
+							"const url = pm.environment.get(\"url\");",
+							"",
+							"const options = {",
+							"  url:  `${url}/login`, ",
+							"  method: 'POST',",
+							"   header: {",
+							"    'Content-Type': 'application/json; charset=UTF-8',",
+							"  },",
+							"  body: JSON.stringify(properUserData)",
+							"};",
+							"",
+							"pm.sendRequest(options, function (err, response) {",
+							"    // we need to get the text from our response (jwt token)",
+							"    console.log(response.text())",
+							"    pm.variables.set(\"tokenFromRequest\", response.text());",
+							"});",
+							""
 						],
 						"type": "text/javascript"
 					}
@@ -214,7 +237,7 @@
 					"bearer": [
 						{
 							"key": "token",
-							"value": "{{apiToken}}",
+							"value": "{{tokenFromRequest}}",
 							"type": "string"
 						}
 					]
@@ -246,7 +269,6 @@
 				{
 					"listen": "test",
 					"script": {
-						"id": "525aeabc-974c-4810-9dbb-00dda65a75ad",
 						"exec": [
 							"pm.test(\"response is unauthorized\", function () {",
 							"    pm.response.to.have.status(401);",
@@ -291,6 +313,5 @@
 			},
 			"response": []
 		}
-	],
-	"protocolProfileBehavior": {}
+	]
 }
